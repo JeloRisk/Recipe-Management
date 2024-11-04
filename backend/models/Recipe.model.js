@@ -7,12 +7,12 @@ const RecipeSchema = new Schema(
   {
     title: {
       type: String,
-      required: [true, "Please enter the recipe title"], 
+      required: [true, "Please enter the recipe title"],
     },
-    description: {
-      type: String,
-      required: [true, "Please enter the recipe description"], 
-    },
+    // description: {
+    //   type: String,
+    //   required: [true, "Please enter the recipe description"],
+    // },
     ingredients: [
       {
         name: { type: String, required: [true, "Please enter the ingredient name"] },

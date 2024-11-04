@@ -69,39 +69,47 @@ export default function RecipeDetailPage({ params }: { params: Promise<{ _id: st
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className='text-center text-red-500'>{error}</p>;
+  if (loading) return <p className="text-center text-gray-500">Loading...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className='container mx-auto p-6'>
-      <div className='flex justify-between items-center mb-6'>
+    <div className="container mx-auto p-8 max-w-3xl">
+      <div className="flex justify-between items-center mb-6">
         <Link
-          href='/recipes'
-          className='text-blue-500 hover:underline'>
+          href="/recipes"
+          className="text-blue-500 hover:underline text-lg font-medium"
+        >
           &larr; Back to Recipes
         </Link>
-        <div className='flex space-x-4'>
+        <div className="flex space-x-4">
           <Link
             href={`/recipes/edit/${_id}`}
-            className='px-4 py-2 bg-yellow-500 text-white rounded-md'>
+            className="btn btn-warning text-white"
+          >
             Edit
           </Link>
           <button
             onClick={handleDelete}
-            className='px-4 py-2 bg-red-500 text-white rounded-md'>
+            className="btn btn-error text-white"
+          >
             Delete
           </button>
         </div>
       </div>
 
-      <h1 className='text-4xl font-bold text-[#d70a6a] mb-4'>{recipe?.title}</h1>
-      <p className='text-gray-700 mb-6'>{recipe?.description}</p>
+      <h1 className="text-4xl font-bold text-[#d70a6a] mb-4">{recipe?.title}</h1>
+      <p className="text-gray-700 text-lg mb-6">{recipe?.description}</p>
 
-      <h2 className='text-2xl font-semibold mb-2'>Ingredients</h2>
-      <ul className='list-disc ml-6 text-gray-600'>
+      <h2 className="text-2xl font-semibold mb-4">Ingredients</h2>
+      <ul className="list-none space-y-4">
         {recipe?.ingredients.map((ingredient) => (
-          <li key={ingredient._id}>
-            {ingredient.quantity} {ingredient.unit} {ingredient.name}
+          <li
+            key={ingredient._id}
+            className="p-4 bg-gray-100 rounded-md shadow-md flex items-center justify-between"
+          >
+            <span className="text-gray-800 font-medium">
+              {ingredient.quantity} {ingredient.unit} {ingredient.name}
+            </span>
           </li>
         ))}
       </ul>

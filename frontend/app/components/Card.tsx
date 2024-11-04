@@ -5,19 +5,19 @@ import Image from "next/image";
 
 interface CardProps {
   title: string;
-  description: string;
+  // description: string;
 }
 
-const Card: React.FC<CardProps> = ({ title, description }) => {
+const Card: React.FC<CardProps> = ({ title }) => {
+  // hovering the specific Item
   const [hovered, setHovered] = useState(false);
 
-  // Function to truncate the description with ellipsis
-  const cutDesc = (text: string, limit: number) => {
-    if (text.length > limit) {
-      return text.slice(0, limit) + "..."; // Add ellipsis if truncated
-    }
-    return text;
-  };
+  // const cutDesc = (text: string, limit: number) => {
+  //   if (text.length > limit) {
+  //     return text.slice(0, limit) + "...";
+  //   }
+  //   return text;
+  // };
 
   return (
     <div
@@ -53,7 +53,7 @@ const Card: React.FC<CardProps> = ({ title, description }) => {
       </figure>
       <div className='card-body p-4'>
         <h2 className='card-title text-md'>{title}</h2>
-        <p className='text-gray-700 text-sm'>{cutDesc(description, 50)}</p>
+        {/* <p className='text-gray-700 text-sm'>{cutDesc(description, 50)}</p> */}
       </div>
     </div>
   );
