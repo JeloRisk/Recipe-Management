@@ -1,9 +1,10 @@
 /** @format */
 "use client";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Card from "../components/Card";
-import RecipeModal from "../components/RecipeModal"; // For viewing details
-import NewRecipeModal from "../components/NewRecipeModal"; // For adding a new recipe
+import RecipeModal from "../components/RecipeModal";
+import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal";
 
 interface Ingredient {
   name: string;
@@ -15,7 +16,7 @@ interface Ingredient {
 interface Recipe {
   _id: string;
   title: string;
-  // description: string;
+  createdAt: string;
   ingredients: Ingredient[];
 }
 
@@ -25,7 +26,8 @@ const RecipesPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isRecipeModalOpen, setRecipeModalOpen] = useState(false);
-  const [isNewRecipeModalOpen, setNewRecipeModalOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,6 +35,9 @@ const RecipesPage = () => {
         const res = await fetch("http://localhost:3000/api/recipes", { cache: "no-store" });
         if (!res.ok) throw new Error("Network response was not ok");
         const data: Recipe[] = await res.json();
+
+        // Sort
+        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setRecipes(data);
       } catch (error) {
         setError(error.message);
@@ -51,64 +56,88 @@ const RecipesPage = () => {
 
   const closeRecipeModal = () => {
     setRecipeModalOpen(false);
-    setSelectedRecipe(null);
+    // setSelectedRecipe(null);
   };
 
-  const openNewRecipeModal = () => {
-    setNewRecipeModalOpen(true);
+  const openDeleteModal = (recipeId: string) => {
+    setRecipeModalOpen(false);
+    setRecipeToDelete(recipeId);
+    setDeleteModalOpen(true);
   };
 
-  const closeNewRecipeModal = () => {
-    setNewRecipeModalOpen(false);
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setRecipeToDelete(null);
+    openRecipeModal(selectedRecipe);
+    setSelectedRecipe(selectedRecipe);
   };
 
-  const handleNewRecipe = (newRecipe: Recipe) => {
-    setRecipes((prevRecipes) => [newRecipe, ...prevRecipes]);
-    closeNewRecipeModal();
+  const handleDeleteRecipe = async () => {
+    if (!recipeToDelete) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/recipes/delete/${recipeToDelete}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete the recipe");
+
+      setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe._id !== recipeToDelete));
+
+      closeDeleteModal();
+      setRecipeToDelete(null);
+      setRecipeModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+    }
   };
 
   if (loading) return <p className='text-center mt-8 text-gray-500'>Loading...</p>;
   if (error) return <p className='text-center mt-8 text-red-500'>Error: {error}</p>;
 
   return (
-    <div className='container mx-auto p-6 flex justify-center flex-col w-fit'>
-      <div className='flex justify-between items-center mb-10'>
-        <h1 className='text-4xl font-bold text-gray-800'>Your Recipes</h1>
-        <button
-          onClick={openNewRecipeModal}
-          className='bg-[#d70a6a] text-white px-6 py-3 rounded-md hover:bg-[#941d55] transition duration-300'>
-          Add New
-        </button>
-      </div>
-      <div className='flex w-fit justify-center'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-          {recipes.map((recipe) => (
-            <div
-              key={recipe._id}
-              onClick={() => openRecipeModal(recipe)}
-              className='cursor-pointer'>
-              <Card
-                title={recipe.title}
-                // description={recipe.description}
-              />
-            </div>
-          ))}
+    <div className={`container mx-auto p-6 flex   flex-col ${recipes.length === 0 ? "w-full" : "w-fit"}`}>
+      <div className={`container mx-auto p-6 flex flex-col ${recipes.length === 0 ? "w-full" : "w-fit"}`}>
+        <div className='w-full flex justify-between items-center mb-10 px-4'>
+          <h1 className='text-4xl font-bold text-gray-800'>Your Recipes</h1>
+          <Link href='/recipes/createRecipe'>
+            <button className='bg-[#d70a6a] text-white px-6 py-3 rounded-md hover:bg-[#941d55] transition duration-300'>Add New</button>
+          </Link>
         </div>
+
+        {recipes.length === 0 ? (
+          <div className='text-center text-gray-600 mt-10'>
+            <p>No recipes found. Start adding some  recipes!</p>
+          </div>
+        ) : (
+          <div className='flex w-full justify-center'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+              {recipes.map((recipe) => (
+                <div
+                  key={recipe._id}
+                  onClick={() => openRecipeModal(recipe)}
+                  className='cursor-pointer'>
+                  <Card title={recipe.title} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Recipe Detail Modal */}
+      {isDeleteModalOpen && (
+        <DeleteConfirmationModal
+          onClose={closeDeleteModal}
+          onConfirm={handleDeleteRecipe}
+          information={selectedRecipe.title}
+        />
+      )}
+
       {isRecipeModalOpen && selectedRecipe && (
         <RecipeModal
           recipe={selectedRecipe}
           onClose={closeRecipeModal}
-        />
-      )}
-
-      {/* New Recipe Modal */}
-      {isNewRecipeModalOpen && (
-        <NewRecipeModal
-          onClose={closeNewRecipeModal}
-          onSave={handleNewRecipe}
+          onDelete={() => openDeleteModal(selectedRecipe._id)}
         />
       )}
     </div>

@@ -12,12 +12,6 @@ const Card: React.FC<CardProps> = ({ title }) => {
   // hovering the specific Item
   const [hovered, setHovered] = useState(false);
 
-  // const cutDesc = (text: string, limit: number) => {
-  //   if (text.length > limit) {
-  //     return text.slice(0, limit) + "...";
-  //   }
-  //   return text;
-  // };
 
   return (
     <div
@@ -53,7 +47,6 @@ const Card: React.FC<CardProps> = ({ title }) => {
       </figure>
       <div className='card-body p-4'>
         <h2 className='card-title text-md'>{title}</h2>
-        {/* <p className='text-gray-700 text-sm'>{cutDesc(description, 50)}</p> */}
       </div>
     </div>
   );

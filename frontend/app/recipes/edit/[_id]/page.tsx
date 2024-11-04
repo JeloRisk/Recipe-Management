@@ -1,11 +1,11 @@
 /** @format */
 "use client";
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 
-const getRecipeById = async (_id: string) => {
+const getRecipeById = async (id: string) => {
   try {
-    const res = await fetch(`http://localhost:3000/api/recipes/${_id}`, {
+    const res = await fetch(`http://localhost:3000/api/recipes/${id}`, {
       cache: "no-store",
     });
 
@@ -20,62 +20,74 @@ const getRecipeById = async (_id: string) => {
   }
 };
 
-export default function EditTopic({ params }: { params: Promise<{ _id: string }> }) {
-  const router = useRouter(); // Initialize useRouter
-  const [recipe, setRecipe] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+interface Ingredient {
+  name: string;
+  quantity: number;
+  unit: string;
+}
 
-  // Unwrap params using React.use()
-  const { _id } = use(params);
+interface Recipe {
+  _id: string;
+  title: string;
+  ingredients: Ingredient[];
+}
+
+export default function EditRecipe({ params }: { params: { _id: string } }) {
+  const router = useRouter(); // Initialize useRouter
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [title, setTitle] = useState<string>("");
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const fetchRecipe = async () => {
-      if (!_id) return; // Check if _id is valid
       try {
-        const recipeData = await getRecipeById(_id);
+        const recipeData = await getRecipeById(params._id);
         setRecipe(recipeData);
+        setTitle(recipeData.title);
+        setIngredients(recipeData.ingredients);
       } catch (err) {
-        setError(err.message);
+        setError("Error fetching recipe");
       } finally {
         setLoading(false);
       }
     };
 
     fetchRecipe();
-  }, [_id]);
+  }, [params._id]);
 
   if (loading) return <p className='text-center mt-8 text-gray-500'>Loading...</p>;
   if (error) return <p className='text-red-500 text-center mt-8'>Error: {error}</p>;
+  if (!recipe) return null; // Ensure recipe is loaded before rendering
 
-  // Ensure recipe is not null before accessing its properties
-  if (!recipe) return null;
+  const handleInputChange = (index: number, field: keyof Ingredient, value: string | number) => {
+    const updatedIngredients = [...ingredients];
+    updatedIngredients[index][field] = value;
+    setIngredients(updatedIngredients);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`http://localhost:3000/api/recipes/${_id}`, {
+      const updatedRecipe = { title, ingredients };
+      const res = await fetch(`http://localhost:3000/api/recipes/${params._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(recipe), // Use the current state of the recipe
+        body: JSON.stringify(updatedRecipe),
       });
 
       if (!res.ok) {
         throw new Error("Failed to update recipe");
       }
 
-      // Optionally redirect or show success message
-      router.push(`/recipes/${_id}`);
+      router.push(`/recipes`);
     } catch (error) {
-      setError(error.message);
+      setError("Error updating recipe");
     }
-  };
-
-  const handleCancel = () => {
-    router.push(`/recipes/${_id}`); // Redirect to the recipe detail page
   };
 
   return (
@@ -93,39 +105,52 @@ export default function EditTopic({ params }: { params: Promise<{ _id: string }>
           <input
             type='text'
             id='title'
-            value={recipe.title}
-            onChange={(e) => setRecipe({ ...recipe, title: e.target.value })}
-            className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-blue-500'
+            required
           />
         </div>
+
         <div className='mb-4'>
-          <label
-            className='block text-gray-700 text-sm font-bold mb-2'
-            htmlFor='description'>
-            Description:
-          </label>
-          <textarea
-            id='description'
-            value={recipe.description}
-            onChange={(e) => setRecipe({ ...recipe, description: e.target.value })}
-            className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-            rows={5}
-          />
+          <label className='block text-gray-700 text-sm font-bold mb-2'>Ingredients:</label>
+          {ingredients.map((ingredient, index) => (
+            <div
+              key={index}
+              className='flex space-x-2 mb-2'>
+              <input
+                type='text'
+                value={ingredient.name}
+                onChange={(e) => handleInputChange(index, "name", e.target.value)}
+                placeholder='Name'
+                className='border border-gray-300 rounded px-2 py-1'
+                required
+              />
+              <input
+                type='number'
+                value={ingredient.quantity}
+                onChange={(e) => handleInputChange(index, "quantity", Number(e.target.value))}
+                placeholder='Quantity'
+                className='border border-gray-300 rounded px-2 py-1'
+                required
+              />
+              <input
+                type='text'
+                value={ingredient.unit}
+                onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+                placeholder='Unit'
+                className='border border-gray-300 rounded px-2 py-1'
+                required
+              />
+            </div>
+          ))}
         </div>
-        {/* Include other fields for ingredients, etc., as needed */}
-        <div className='flex justify-between mt-6'>
-          <button
-            type='submit'
-            className='bg-[#d70a6a] text-white font-bold py-2 px-4 rounded hover:bg-[#941d55] transition duration-300'>
-            Save Changes
-          </button>
-          <button
-            type='button'
-            onClick={handleCancel}
-            className='bg-gray-300 text-black font-bold py-2 px-4 rounded hover:bg-gray-400 transition duration-300'>
-            Cancel
-          </button>
-        </div>
+
+        <button
+          type='submit'
+          className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'>
+          Update Recipe
+        </button>
       </form>
     </div>
   );
