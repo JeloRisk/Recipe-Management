@@ -32,7 +32,7 @@ const RecipesPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/recipes", { cache: "no-store" });
+        const res = await fetch("/api/recipes", { cache: "no-store" });
         if (!res.ok) throw new Error("Network response was not ok");
         const data: Recipe[] = await res.json();
 
@@ -76,11 +76,9 @@ const RecipesPage = () => {
     if (!recipeToDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/recipes/delete/${recipeToDelete}`, {
+      const res = await fetch(`/api/recipes/delete/${recipeToDelete}`, {
         method: "DELETE",
       });
-
-      if (!res.ok) throw new Error("Failed to delete the recipe");
 
       setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe._id !== recipeToDelete));
 
@@ -92,8 +90,14 @@ const RecipesPage = () => {
     }
   };
 
-  if (loading) return <p className='text-center mt-8 text-gray-500'>Loading...</p>;
-  if (error) return <p className='text-center mt-8 text-red-500'>Error: {error}</p>;
+  // if the data is still being fetched, display a loading indicator. Do it with the error
+  // if (loading) {
+  //   return <p className='text-center mt-8 text-gray-500'>Loading...</p>;
+  // }
+
+  if (error) {
+    return <p className='text-center mt-8 text-red-500'>Error: {error}</p>;
+  }
 
   return (
     <div className={`container mx-auto p-6 flex   flex-col ${recipes.length === 0 ? "w-full" : "w-fit"}`}>
@@ -105,9 +109,10 @@ const RecipesPage = () => {
           </Link>
         </div>
 
+        {/* check if there is no recipe  */}
         {recipes.length === 0 ? (
           <div className='text-center text-gray-600 mt-10'>
-            <p>No recipes found. Start adding some  recipes!</p>
+            <p>No recipes found. Start adding some recipes!</p>
           </div>
         ) : (
           <div className='flex w-full justify-center'>

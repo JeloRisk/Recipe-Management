@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const AddRecipePage = () => {
+  // set the all the possible state: title, ingredients
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState([{ name: "", quantity: 0, unit: "" }]);
   const router = useRouter();
@@ -39,7 +40,7 @@ const AddRecipePage = () => {
     const newRecipe = { title, ingredients: validIngredients };
 
     try {
-      const res = await fetch("http://localhost:3000/api/recipes", {
+      const res = await fetch("/api/recipes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,13 +58,13 @@ const AddRecipePage = () => {
   };
 
   return (
-    <div className='min-h-screen bg-pink-200 flex items-start w-full  justify-center p-4'>
-      <div className='flex items-start h-fit mt-28 gap-10'>
+    <div className='min-h-screen bg-pink-200 flex items-start  w-full   justify-center p-4'>
+      <div className='flex items-start justify-center h-fit w-full mt-28 gap-10'>
         <div className='w-full max-w-3xl bg-white h-fit rounded-lg shadow-lg p-8'>
-          <h1 className='text-3xl font-bold mb-6 text-[#d70a6a] sticky'>Add New Recipe</h1>
+          <h1 className='text-3xl font-bold mb-6 text-primary sticky'>Add New Recipe</h1>
 
           <form onSubmit={handleSubmit}>
-            <div className='mb-4'>
+            <div className='mb-4 w-full'>
               <label
                 className='block text-gray-700 text-sm font-bold mb-2'
                 htmlFor='title'>
@@ -74,7 +75,7 @@ const AddRecipePage = () => {
                 id='title'
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
+                className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-primary'
                 required
               />
             </div>
@@ -86,29 +87,31 @@ const AddRecipePage = () => {
                   key={index}
                   className='flex space-x-2 mb-2 items-center'>
                   <input
-                    type='text'
-                    placeholder='Name'
-                    value={ingredient.name}
-                    onChange={(e) => handleInputChange(index, "name", e.target.value)}
-                    className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
-                    required
-                  />
-                  <input
                     type='number'
                     placeholder='Quantity'
                     value={ingredient.quantity}
                     onChange={(e) => handleInputChange(index, "quantity", parseInt(e.target.value))}
-                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
+                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-primary'
                     required
                   />
+
                   <input
                     type='text'
                     placeholder='Unit'
                     value={ingredient.unit}
                     onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
+                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-primary'
                     required
                   />
+                  <input
+                    type='text'
+                    placeholder='Name'
+                    value={ingredient.name}
+                    onChange={(e) => handleInputChange(index, "name", e.target.value)}
+                    className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-primary'
+                    required
+                  />
+
                   <button
                     type='button'
                     onClick={() => handleRemoveIngredient(index)}
@@ -125,7 +128,7 @@ const AddRecipePage = () => {
               <button
                 type='button'
                 onClick={handleAddIngredient}
-                className='text-[#d70a6a] font-bold mt-2'>
+                className='text-primary font-bold mt-2'>
                 + Add Ingredient
               </button>
             </div>
@@ -138,7 +141,7 @@ const AddRecipePage = () => {
               </Link>
               <button
                 type='submit'
-                className='bg-[#d70a6a] text-white py-2 px-4 rounded hover:bg-[#c0095e]'>
+                className='bg-primary text-white py-2 px-4 rounded hover:bg-[#c0095e]'>
                 Submit
               </button>
             </div>

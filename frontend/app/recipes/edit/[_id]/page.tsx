@@ -1,7 +1,9 @@
 /** @format */
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 const getRecipeById = async (id: string) => {
   try {
@@ -16,7 +18,7 @@ const getRecipeById = async (id: string) => {
     return res.json();
   } catch (error) {
     console.error(error);
-    throw error; // Re-throw to handle it in the component
+    throw error;
   }
 };
 
@@ -32,47 +34,101 @@ interface Recipe {
   ingredients: Ingredient[];
 }
 
-export default function EditRecipe({ params }: { params: { _id: string } }) {
-  const router = useRouter(); // Initialize useRouter
+export default function EditRecipe({ params }: { params: Promise<{ _id: string }> }) {
+  const router = useRouter();
+
+  /*
+  states:
+   - recipe
+   - title
+   - loading
+   - error
+  */
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [title, setTitle] = useState<string>("");
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
+  const [unwrappedParams, setUnwrappedParams] = useState<{ _id: string } | null>(null);
+
   useEffect(() => {
-    const fetchRecipe = async () => {
-      try {
-        const recipeData = await getRecipeById(params._id);
-        setRecipe(recipeData);
-        setTitle(recipeData.title);
-        setIngredients(recipeData.ingredients);
-      } catch (err) {
-        setError("Error fetching recipe");
-      } finally {
-        setLoading(false);
-      }
+    const unwrapParams = async () => {
+      const resolvedParams = await params;
+      setUnwrappedParams(resolvedParams);
     };
 
-    fetchRecipe();
-  }, [params._id]);
+    unwrapParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (unwrappedParams) {
+      const fetchRecipe = async () => {
+        try {
+          const recipeData = await getRecipeById(unwrappedParams._id);
+          setRecipe(recipeData);
+          setTitle(recipeData.title);
+          setIngredients(recipeData.ingredients);
+        } catch (err) {
+          setError("Error fetching recipe");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchRecipe();
+    }
+  }, [unwrappedParams]);
 
   if (loading) return <p className='text-center mt-8 text-gray-500'>Loading...</p>;
   if (error) return <p className='text-red-500 text-center mt-8'>Error: {error}</p>;
-  if (!recipe) return null; // Ensure recipe is loaded before rendering
+  if (!recipe) return null;
 
-  const handleInputChange = (index: number, field: keyof Ingredient, value: string | number) => {
+  const handleAddIngredient = () => {
+    setIngredients([...ingredients, { name: "", quantity: "", unit: "" }]);
+  };
+
+  const handleInputChange = (index, field, value) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index][field] = value;
+
+    // to handle fields
+    if (field === "name") {
+      updatedIngredients[index][field] = value.trim();
+    } else if (field === "quantity") {
+      updatedIngredients[index][field] = value;
+    } else if (field === "unit") {
+      updatedIngredients[index][field] = value.trim();
+    }
+
     setIngredients(updatedIngredients);
   };
 
+  const handleRemoveIngredient = (index) => {
+    const updatedIngredients = ingredients.filter((_, i) => i !== index);
+    setIngredients(updatedIngredients);
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    //  filter out incomplete ingredients
+    const validIngredients = ingredients.filter((ingredient) => ingredient.name && ingredient.quantity > 0 && ingredient.unit);
+
+    // if any ingredient has a quantity of 0.
+    if (ingredients.some((ingredient) => ingredient.quantity === 0)) {
+      alert("You must not put 0 as quantity for any ingredient");
+      return;
+    }
+
+    if (validIngredients.length === 0) {
+      alert("Please provide at least one complete ingredient.");
+      return;
+    }
+
     try {
-      const updatedRecipe = { title, ingredients };
-      const res = await fetch(`http://localhost:3000/api/recipes/${params._id}`, {
+      const updatedRecipe = { title, ingredients: validIngredients };
+
+      // put in the database
+      const res = await fetch(`http://localhost:3000/api/recipes/${unwrappedParams?._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -80,10 +136,7 @@ export default function EditRecipe({ params }: { params: { _id: string } }) {
         body: JSON.stringify(updatedRecipe),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to update recipe");
-      }
-
+      // go back
       router.push(`/recipes`);
     } catch (error) {
       setError("Error updating recipe");
@@ -91,67 +144,100 @@ export default function EditRecipe({ params }: { params: { _id: string } }) {
   };
 
   return (
-    <div className='container mx-auto p-6'>
-      <h1 className='text-3xl font-bold mb-6'>Edit Recipe: {recipe.title}</h1>
-      <form
-        onSubmit={handleSubmit}
-        className='bg-white shadow-md rounded-lg p-6'>
-        <div className='mb-4'>
-          <label
-            className='block text-gray-700 text-sm font-bold mb-2'
-            htmlFor='title'>
-            Title:
-          </label>
-          <input
-            type='text'
-            id='title'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-blue-500'
-            required
-          />
-        </div>
+    <div className='min-h-screen bg-pink-200 flex items-start w-full justify-center p-4'>
+      <div className='flex items-start justify-center h-fit w-full mt-28 gap-10'>
+        <div className='w-full max-w-3xl bg-white h-fit rounded-lg shadow-lg p-8'>
+          <h1 className='text-3xl font-bold mb-6 text-[#d70a6a]'>Edit Recipe</h1>
 
-        <div className='mb-4'>
-          <label className='block text-gray-700 text-sm font-bold mb-2'>Ingredients:</label>
-          {ingredients.map((ingredient, index) => (
-            <div
-              key={index}
-              className='flex space-x-2 mb-2'>
+          <form onSubmit={handleSubmit}>
+            <div className='mb-4'>
+              <label
+                className='block text-gray-700 text-sm font-bold mb-2'
+                htmlFor='title'>
+                Title:
+              </label>
               <input
                 type='text'
-                value={ingredient.name}
-                onChange={(e) => handleInputChange(index, "name", e.target.value)}
-                placeholder='Name'
-                className='border border-gray-300 rounded px-2 py-1'
-                required
-              />
-              <input
-                type='number'
-                value={ingredient.quantity}
-                onChange={(e) => handleInputChange(index, "quantity", Number(e.target.value))}
-                placeholder='Quantity'
-                className='border border-gray-300 rounded px-2 py-1'
-                required
-              />
-              <input
-                type='text'
-                value={ingredient.unit}
-                onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-                placeholder='Unit'
-                className='border border-gray-300 rounded px-2 py-1'
+                id='title'
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
                 required
               />
             </div>
-          ))}
-        </div>
 
-        <button
-          type='submit'
-          className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'>
-          Update Recipe
-        </button>
-      </form>
+            <div className='mb-4'>
+              <label className='block text-gray-700 text-sm font-bold mb-2'>Ingredients:</label>
+
+              {/* map the ing */}
+              {ingredients.map((ingredient, index) => (
+                <div
+                  key={index}
+                  className='flex space-x-2 mb-2 items-center'>
+                  <input
+                    type='text'
+                    placeholder='Name'
+                    value={ingredient.name}
+                    onChange={(e) => handleInputChange(index, "name", e.target.value)}
+                    className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
+                    required
+                  />
+
+                  <input
+                    type='number'
+                    placeholder='Quantity'
+                    value={ingredient.quantity}
+                    onChange={(e) => handleInputChange(index, "quantity", parseInt(e.target.value))}
+                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
+                    required
+                  />
+
+                  <input
+                    type='text'
+                    placeholder='Unit'
+                    value={ingredient.unit}
+                    onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
+                    required
+                  />
+
+                  <button
+                    type='button'
+                    onClick={() => handleRemoveIngredient(index)}
+                    className='text-red-500 font-bold'>
+                    <Image
+                      src='/icons/remove.svg'
+                      alt='Remove'
+                      width={20}
+                      height={20}
+                    />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type='button'
+                onClick={handleAddIngredient}
+                className='text-[#d70a6a] font-bold mt-2'>
+                + Add Ingredient
+              </button>
+            </div>
+
+            <div className='text-right gap-10'>
+              <Link
+                href={"/recipes"}
+                className='py-2 px-4 rounded text-[#c0095e] hover:font-semibold mr-2'>
+                Cancel
+              </Link>
+              <button
+                type='submit'
+                className='bg-[#d70a6a] text-white py-2 px-4 rounded hover:bg-[#c0095e]'>
+                Update Recipe
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
