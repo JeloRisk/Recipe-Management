@@ -137,7 +137,7 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
       });
 
       // go back
-      router.push(`/recipes`);
+      router.push(`/recipes/${recipe._id}`);
     } catch (error) {
       setError("Error updating recipe");
     }
@@ -225,7 +225,7 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
 
             <div className='text-right gap-10'>
               <Link
-                href={"/recipes"}
+                href={`/recipes/${recipe._id}`}
                 className='py-2 px-4 rounded text-[#c0095e] hover:font-semibold mr-2'>
                 Cancel
               </Link>

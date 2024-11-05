@@ -118,12 +118,16 @@ const RecipesPage = () => {
           <div className='flex w-full justify-center'>
             <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6'>
               {recipes.map((recipe) => (
-                <div
+                // <div
+                //   key={recipe._id}
+                //   onClick={() => openRecipeModal(recipe)}
+                //   className='cursor-pointer'>
+                <Link
                   key={recipe._id}
-                  onClick={() => openRecipeModal(recipe)}
-                  className='cursor-pointer'>
+                  href={"/recipes/" + recipe._id}>
                   <Card title={recipe.title} />
-                </div>
+                </Link>
+                // </div>
               ))}
             </div>
           </div>
