@@ -17,8 +17,8 @@ const RecipeSchema = new Schema(
       {
         name: { type: String, required: [true, "Please enter the ingredient name"] },
         // quantity: { type: Number, required: [true, "Please enter the ingredient quantity"] },
-        quantity: { type: String, required: [true, "Please enter the ingredient quantity"] },
-        unit: { type: String, required: [true, "Please specify the unit for the quantity"] },
+
+        quantityAndUnit: { type: String, required: [true, "Please specify the unit for the quantity"] },
       },
     ],
   },

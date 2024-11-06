@@ -1,4 +1,11 @@
 /** @format */
+
+/*
+  Description     To render 
+  component used:
+  recipe modal
+  delete confirmation
+*/
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -100,9 +107,9 @@ const RecipesPage = () => {
   }
 
   return (
-    <div className={`container mx-auto p-6 flex   flex-col ${recipes.length === 0 ? "w-full" : "w-fit"}`}>
+    <div className={`container mx-auto p-6 flex   flex-col ${recipes.length === 0 ? "w-full" : "w-full"}`}>
       <div className={`container mx-auto p-6 flex flex-col ${recipes.length === 0 ? "w-full" : "w-fit"}`}>
-        <div className='w-full flex justify-between items-center mb-10 px-4'>
+        <div className='w-full flex justify-between items-center mb-10'>
           <h1 className='text-4xl font-bold text-gray-800'>Your Recipes</h1>
           <Link href='/recipes/createRecipe'>
             <button className='bg-[#d70a6a] text-white px-6 py-3 rounded-md hover:bg-[#941d55] transition duration-300'>Add New</button>
@@ -110,27 +117,30 @@ const RecipesPage = () => {
         </div>
 
         {/* check if there is no recipe  */}
-        {recipes.length === 0 ? (
-          <div className='text-center text-gray-600 mt-10'>
-            <p>No recipes found. Start adding some recipes!</p>
+        {loading ? (
+          <div className='flex justify-center mt-10'>
+            <span className='loading loading-dots loading-lg'></span>
           </div>
         ) : (
-          <div className='flex w-full justify-center'>
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-              {recipes.map((recipe) => (
-                // <div
-                //   key={recipe._id}
-                //   onClick={() => openRecipeModal(recipe)}
-                //   className='cursor-pointer'>
-                <Link
-                  key={recipe._id}
-                  href={"/recipes/" + recipe._id}>
-                  <Card title={recipe.title} />
-                </Link>
-                // </div>
-              ))}
-            </div>
-          </div>
+          <>
+            {recipes.length === 0 ? (
+              <div className='text-center text-gray-600 mt-10'>
+                <p>No recipes found. Start adding some recipes!</p>
+              </div>
+            ) : (
+              <div className='flex w-full justify-center'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+                  {recipes.map((recipe) => (
+                    <Card
+                      key={recipe._id}
+                      title={recipe.title}
+                      id={recipe._id}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

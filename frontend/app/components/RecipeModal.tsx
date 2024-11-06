@@ -49,7 +49,7 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose, onEdit, onDe
   };
 
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10 overflow-auto'>
+    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center  overflow-auto'>
       <div
         ref={modalRef}
         className='bg-white rounded-lg shadow-lg w-11/12 md:w-4/5 lg:w-3/5 max-h-[90vh] h-[80vh] overflow-hidden flex flex-col sm:flex-col lg:flex-row'>

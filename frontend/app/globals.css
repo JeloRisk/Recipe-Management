@@ -1,3 +1,5 @@
+/** @format */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,3 +21,7 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 } */
+
+.zzzz {
+  z-index: 9999 !important;
+}

@@ -9,11 +9,11 @@ import Link from "next/link";
 const AddRecipePage = () => {
   // set the all the possible state: title, ingredients
   const [title, setTitle] = useState("");
-  const [ingredients, setIngredients] = useState([{ name: "", quantity: 0, unit: "" }]);
+  const [ingredients, setIngredients] = useState([{ name: "", quantityAndUnit: "" }]);
   const router = useRouter();
 
   const handleAddIngredient = () => {
-    setIngredients([...ingredients, { name: "", quantity: 0, unit: "" }]);
+    setIngredients([...ingredients, { name: "", quantityAndUnit: "" }]);
   };
 
   const handleInputChange = (index, field, value) => {
@@ -30,7 +30,8 @@ const AddRecipePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validIngredients = ingredients.filter((ingredient) => ingredient.name && ingredient.quantity > 0 && ingredient.unit);
+    // const validIngredients = ingredients.filter((ingredient) => ingredient.name && ingredient.quantity > 0 && ingredient.unit);
+    const validIngredients = ingredients;
 
     if (validIngredients.length === 0) {
       alert("Please provide at least one complete ingredient.");
@@ -68,7 +69,7 @@ const AddRecipePage = () => {
               <label
                 className='block text-gray-700 text-sm font-bold mb-2'
                 htmlFor='title'>
-                Title:
+                Recipe Name:
               </label>
               <input
                 type='text'
@@ -86,21 +87,21 @@ const AddRecipePage = () => {
                 <div
                   key={index}
                   className='flex space-x-2 mb-2 items-center'>
-                  <input
+                  {/* <input
                     type='number'
                     placeholder='Quantity'
                     value={ingredient.quantity}
                     onChange={(e) => handleInputChange(index, "quantity", parseInt(e.target.value))}
                     className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-primary'
                     required
-                  />
+                  /> */}
 
                   <input
                     type='text'
-                    placeholder='Unit'
-                    value={ingredient.unit}
-                    onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-primary'
+                    placeholder='Quantity and Unit (1/2 cup)'
+                    value={ingredient.quantityAndUnit}
+                    onChange={(e) => handleInputChange(index, "quantityAndUnit", e.target.value)}
+                    className='border border-gray-300 rounded w-2/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-primary'
                     required
                   />
                   <input

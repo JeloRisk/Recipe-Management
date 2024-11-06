@@ -24,8 +24,7 @@ const getRecipeById = async (id: string) => {
 
 interface Ingredient {
   name: string;
-  quantity: number;
-  unit: string;
+  quantityAndUnit: string;
 }
 
 interface Recipe {
@@ -85,7 +84,7 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
   if (!recipe) return null;
 
   const handleAddIngredient = () => {
-    setIngredients([...ingredients, { name: "", quantity: "", unit: "" }]);
+    setIngredients([...ingredients, { name: "", quantityAndUnit: "" }]);
   };
 
   const handleInputChange = (index, field, value) => {
@@ -93,11 +92,9 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
 
     // to handle fields
     if (field === "name") {
-      updatedIngredients[index][field] = value.trim();
-    } else if (field === "quantity") {
       updatedIngredients[index][field] = value;
-    } else if (field === "unit") {
-      updatedIngredients[index][field] = value.trim();
+    } else if (field === "quantityAndUnit") {
+      updatedIngredients[index][field] = value;
     }
 
     setIngredients(updatedIngredients);
@@ -111,13 +108,13 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
     e.preventDefault();
 
     //  filter out incomplete ingredients
-    const validIngredients = ingredients.filter((ingredient) => ingredient.name && ingredient.quantity > 0 && ingredient.unit);
+    const validIngredients = ingredients.filter((ingredient) => ingredient.name && ingredient.quantityAndUnit);
 
     // if any ingredient has a quantity of 0.
-    if (ingredients.some((ingredient) => ingredient.quantity === 0)) {
-      alert("You must not put 0 as quantity for any ingredient");
-      return;
-    }
+    // if (ingredients.some((ingredient) => ingredient.quantity === 0)) {
+    //   alert("You must not put 0 as quantity for any ingredient");
+    //   return;
+    // }
 
     if (validIngredients.length === 0) {
       alert("Please provide at least one complete ingredient.");
@@ -137,12 +134,16 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
       });
 
       // go back
+      // router.push(`/recipes/${recipe._id}`);
       router.push(`/recipes/${recipe._id}`);
     } catch (error) {
       setError("Error updating recipe");
     }
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
   return (
     <div className='min-h-screen bg-pink-200 flex items-start w-full justify-center p-4'>
       <div className='flex items-start justify-center h-fit w-full mt-28 gap-10'>
@@ -154,7 +155,7 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
               <label
                 className='block text-gray-700 text-sm font-bold mb-2'
                 htmlFor='title'>
-                Title:
+                Recipe Name:
               </label>
               <input
                 type='text'
@@ -176,28 +177,19 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
                   className='flex space-x-2 mb-2 items-center'>
                   <input
                     type='text'
-                    placeholder='Name'
-                    value={ingredient.name}
-                    onChange={(e) => handleInputChange(index, "name", e.target.value)}
-                    className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
-                    required
-                  />
-
-                  <input
-                    type='number'
-                    placeholder='Quantity'
-                    value={ingredient.quantity}
-                    onChange={(e) => handleInputChange(index, "quantity", parseInt(e.target.value))}
+                    placeholder='Quantity and Unit (1/2 cup)'
+                    value={ingredient.quantityAndUnit}
+                    onChange={(e) => handleInputChange(index, "quantityAndUnit", e.target.value)}
                     className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
                     required
                   />
 
                   <input
                     type='text'
-                    placeholder='Unit'
-                    value={ingredient.unit}
-                    onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-                    className='border border-gray-300 rounded w-1/4 py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
+                    placeholder='Name'
+                    value={ingredient.name}
+                    onChange={(e) => handleInputChange(index, "name", e.target.value)}
+                    className='border border-gray-300 rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:border-[#d70a6a]'
                     required
                   />
 
@@ -224,11 +216,11 @@ export default function EditRecipe({ params }: { params: Promise<{ _id: string }
             </div>
 
             <div className='text-right gap-10'>
-              <Link
-                href={`/recipes/${recipe._id}`}
+              <button
+                onClick={handleCancel}
                 className='py-2 px-4 rounded text-[#c0095e] hover:font-semibold mr-2'>
                 Cancel
-              </Link>
+              </button>
               <button
                 type='submit'
                 className='bg-[#d70a6a] text-white py-2 px-4 rounded hover:bg-[#c0095e]'>

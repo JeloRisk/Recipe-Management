@@ -2,10 +2,9 @@
 "use client";
 import React from "react";
 
-
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ onClose, onConfirm, information }) => {
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+    <div className=' fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 zzzz'>
       <div className='bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3'>
         <h2 className='text-xl font-bold mb-4'>Confirm Delete</h2>
         <p>
