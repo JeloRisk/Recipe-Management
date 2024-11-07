@@ -15,8 +15,7 @@ import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal
 
 interface Ingredient {
   name: string;
-  quantity: number;
-  unit: string;
+  quantityAndUnit: string;
   _id: string;
 }
 
@@ -135,6 +134,7 @@ const RecipesPage = () => {
                       key={recipe._id}
                       title={recipe.title}
                       id={recipe._id}
+                      ingredients={recipe.ingredients}
                     />
                   ))}
                 </div>

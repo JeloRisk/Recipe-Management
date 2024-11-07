@@ -33,6 +33,14 @@ const RecipeDetails: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  useEffect(() => {
+    const navbar = document.querySelector(".navbar");
+    if (navbar) {
+  
+      navbar.style.zIndex = showDeleteModal ? "auto" : "10";
+    }
+  }, [showDeleteModal]);
+
   const handleDelete = async () => {
     try {
       const res = await fetch(`/api/recipes/delete/${recipe._id}`, { method: "DELETE" });
@@ -104,7 +112,6 @@ const RecipeDetails: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
 
         {showDeleteModal && (
           <DeleteConfirmationModal
-          
             onClose={() => setShowDeleteModal(false)}
             onConfirm={handleDelete}
             information={recipe.title}

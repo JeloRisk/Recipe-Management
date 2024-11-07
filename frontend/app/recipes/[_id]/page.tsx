@@ -9,6 +9,7 @@ interface Ingredient {
   quantity: number;
   unit: string;
   _id: string;
+  quantityAndUnit?: string;
 }
 
 interface Recipe {

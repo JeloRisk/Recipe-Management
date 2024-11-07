@@ -1,11 +1,12 @@
 /** @format */
-"use client";
+
+// DeleteConfirmationModal.tsx
 import React from "react";
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ onClose, onConfirm, information }) => {
   return (
-    <div className=' fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 zzzz'>
-      <div className='bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3'>
+    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]'>
+      <div className='bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3 z-[1010]'>
         <h2 className='text-xl font-bold mb-4'>Confirm Delete</h2>
         <p>
           Are you sure you want to delete this <b>{information}</b>?
