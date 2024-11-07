@@ -14,7 +14,7 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className='navbar bg-white border-b border-b-gray-400 py-4 flex justify-between items-center z-10 px-4 sm:px-6 md:px-20'>
+    <nav className='navbar fixed top-0 bg-white border-b border-b-gray-400 py-4 flex justify-between items-center z-20 px-4 sm:px-6 md:px-20 h-[60px]'>
       <div className='flex items-center'>
         <Link href={"/"}>
           <div className='text-2xl font-bold text-gray-700 hover:text-gray-900'>Dear Delicacy</div>

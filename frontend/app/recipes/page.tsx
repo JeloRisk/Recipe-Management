@@ -1,17 +1,13 @@
 /** @format */
-
-/*
-  Description     To render 
-  component used:
-  recipe modal
-  delete confirmation
-*/
 "use client";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import Card from "../components/Card";
+
 import RecipeModal from "../components/RecipeModal";
 import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal";
+import ErrorMessage from "../components/ErrorMessage";
+import LoadingIndicator from "../components/LoadingIndicator";
+import RecipeHeader from "../components/RecipeHeader";
+import RecipeList from "../components/RecipeList";
 
 interface Ingredient {
   name: string;
@@ -35,35 +31,35 @@ const RecipesPage = () => {
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
+  // Fetch recipes on initial render
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRecipes = async () => {
       try {
-        const res = await fetch("/api/recipes", { cache: "no-store" });
-        if (!res.ok) throw new Error("Network response was not ok");
-        const data: Recipe[] = await res.json();
+        const response = await fetch("/api/recipes", { cache: "no-store" });
+        if (!response.ok) throw new Error("Failed to fetch recipes.");
 
-        // Sort
-        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setRecipes(data);
-      } catch (error) {
-        setError(error.message);
+        const fetchedRecipes: Recipe[] = await response.json();
+        // Sort recipes by creation date, newest first
+        fetchedRecipes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        setRecipes(fetchedRecipes);
+      } catch (err) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchRecipes();
   }, []);
 
+  // Open/close modal handlers
   const openRecipeModal = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
     setRecipeModalOpen(true);
   };
 
-  const closeRecipeModal = () => {
-    setRecipeModalOpen(false);
-    // setSelectedRecipe(null);
-  };
+  const closeRecipeModal = () => setRecipeModalOpen(false);
 
   const openDeleteModal = (recipeId: string) => {
     setRecipeModalOpen(false);
@@ -74,81 +70,48 @@ const RecipesPage = () => {
   const closeDeleteModal = () => {
     setDeleteModalOpen(false);
     setRecipeToDelete(null);
-    openRecipeModal(selectedRecipe);
-    setSelectedRecipe(selectedRecipe);
   };
 
   const handleDeleteRecipe = async () => {
     if (!recipeToDelete) return;
 
     try {
-      const res = await fetch(`/api/recipes/delete/${recipeToDelete}`, {
-        method: "DELETE",
-      });
-
+      await fetch(`/api/recipes/delete/${recipeToDelete}`, { method: "DELETE" });
       setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe._id !== recipeToDelete));
-
       closeDeleteModal();
-      setRecipeToDelete(null);
-      setRecipeModalOpen(false);
     } catch (error) {
       console.error("Error deleting recipe:", error);
     }
   };
 
-  // if the data is still being fetched, display a loading indicator. Do it with the error
-  // if (loading) {
-  //   return <p className='text-center mt-8 text-gray-500'>Loading...</p>;
-  // }
-
-  if (error) {
-    return <p className='text-center mt-8 text-red-500'>Error: {error}</p>;
-  }
+  if (error) return <ErrorMessage message={error} />;
 
   return (
-    <div className={`container mx-auto p-6 flex   flex-col ${recipes.length === 0 ? "w-full" : "w-full"}`}>
-      <div className={`container mx-auto p-6 flex flex-col ${recipes.length === 0 ? "w-full" : "w-fit"}`}>
-        <div className='w-full flex justify-between items-center mb-10'>
-          <h1 className='text-4xl font-bold text-gray-800'>Your Recipes</h1>
-          <Link href='/recipes/createRecipe'>
-            <button className='bg-[#d70a6a] text-white px-6 py-3 rounded-md hover:bg-[#941d55] transition duration-300'>Add New</button>
-          </Link>
-        </div>
+    <div className='flex flex-col w-full p-4 sm:p-6 lg:p-10'>
+      <div className='w-full max-w-screen-lg mx-auto'>
+        <RecipeHeader />
 
-        {/* check if there is no recipe  */}
+        {/* Conditional Rendering for Loading, No Recipes, or Recipe List */}
         {loading ? (
-          <div className='flex justify-center mt-10'>
-            <span className='loading loading-dots loading-lg'></span>
+          <LoadingIndicator />
+        ) : recipes.length === 0 ? (
+          <div className='text-center text-gray-600 mt-10'>
+            <p>No recipes found. Start adding some recipes!</p>
           </div>
         ) : (
-          <>
-            {recipes.length === 0 ? (
-              <div className='text-center text-gray-600 mt-10'>
-                <p>No recipes found. Start adding some recipes!</p>
-              </div>
-            ) : (
-              <div className='flex w-full justify-center'>
-                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-                  {recipes.map((recipe) => (
-                    <Card
-                      key={recipe._id}
-                      title={recipe.title}
-                      id={recipe._id}
-                      ingredients={recipe.ingredients}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+          <RecipeList
+            recipes={recipes}
+            onSelectRecipe={openRecipeModal}
+          />
         )}
       </div>
 
+      {/* Modals */}
       {isDeleteModalOpen && (
         <DeleteConfirmationModal
           onClose={closeDeleteModal}
           onConfirm={handleDeleteRecipe}
-          information={selectedRecipe.title}
+          information={selectedRecipe?.title || ""}
         />
       )}
 

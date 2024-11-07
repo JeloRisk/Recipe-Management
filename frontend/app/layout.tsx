@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navigation></Navigation>
         {/* e navbar */}
 
-        <main className='flex bg-white shadow-md rounded-md  w-full'>{children}</main>
+        <main className='flex h-[100vh] mt-[60px] bg-white shadow-md rounded-md  w-full'>{children}</main>
       </body>
     </html>
   );
