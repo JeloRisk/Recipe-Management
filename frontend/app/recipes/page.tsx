@@ -1,7 +1,7 @@
 /** @format */
+
 "use client";
 import React, { useEffect, useState } from "react";
-
 import RecipeModal from "../components/RecipeModal";
 import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal";
 import ErrorMessage from "../components/ErrorMessage";
@@ -31,29 +31,31 @@ const RecipesPage = () => {
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
 
-  // Fetch recipes on initial render
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const recipesPerPage = 12;
+
+  const fetchRecipes = async (page: number) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/recipes?page=${page}&limit=${recipesPerPage}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Failed to fetch recipes.");
+
+      const data = await response.json();
+      setRecipes(data.recipes);
+      setTotalPages(data.totalPages);
+      setCurrentPage(data.currentPage);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        const response = await fetch("/api/recipes", { cache: "no-store" });
-        if (!response.ok) throw new Error("Failed to fetch recipes.");
+    fetchRecipes(currentPage);
+  }, [currentPage]);
 
-        const fetchedRecipes: Recipe[] = await response.json();
-        // Sort recipes by creation date, newest first
-        fetchedRecipes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-        setRecipes(fetchedRecipes);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRecipes();
-  }, []);
-
-  // Open/close modal handlers
   const openRecipeModal = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
     setRecipeModalOpen(true);
@@ -84,14 +86,19 @@ const RecipesPage = () => {
     }
   };
 
+  const goToPage = (page: number) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   if (error) return <ErrorMessage message={error} />;
 
   return (
-    <div className='flex flex-col w-full p-4 sm:p-6 lg:p-10'>
+    <div className='flex flex-col w-full px-4 sm:px-6 md:px-20 pt-10'>
       <div className='w-full max-w-screen-lg mx-auto'>
         <RecipeHeader />
 
-        {/* Conditional Rendering for Loading, No Recipes, or Recipe List */}
         {loading ? (
           <LoadingIndicator />
         ) : recipes.length === 0 ? (
@@ -104,9 +111,29 @@ const RecipesPage = () => {
             onSelectRecipe={openRecipeModal}
           />
         )}
+
+        {/* Pagination Controls */}
+        <div className='flex justify-center mt-8'>
+          <div className='btn-group'>
+            <button
+              className='btn btn-outline'
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}>
+              <div className='w-4 h-4 mr-2' /> Previous
+            </button>
+            <span className='btn btn-outline'>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className='btn btn-outline'
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}>
+              Next <div className='w-4 h-4 ml-2' />
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Modals */}
       {isDeleteModalOpen && (
         <DeleteConfirmationModal
           onClose={closeDeleteModal}

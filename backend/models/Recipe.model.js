@@ -7,7 +7,7 @@ const RecipeSchema = new Schema(
   {
     title: {
       type: String,
-      required: [true, "Please enter the recipe title"],
+      required: [false, "Please enter the recipe title"],
     },
     // description: {
     //   type: String,
@@ -21,7 +21,9 @@ const RecipeSchema = new Schema(
         quantityAndUnit: { type: String, required: [true, "Please specify the unit for the quantity"] },
       },
     ],
+    image: String, // To store the image URL
   },
+
   {
     timestamps: true,
   }

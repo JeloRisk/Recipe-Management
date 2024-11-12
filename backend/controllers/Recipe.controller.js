@@ -10,12 +10,33 @@ const createRecipe = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// const getRecipes = async (req, res) => {
+//   try {
+//     const recipes = await Recipe.find({});
+//     res.status(200).json(recipes);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 const getRecipes = async (req, res) => {
+  const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+  const limit = parseInt(req.query.limit) || 10; // Default limit to 10 items
+
   try {
-    const recipes = await Recipe.find({});
-    res.status(200).json(recipes);
+    const totalRecipes = await Recipe.countDocuments(); // Total number of recipes
+    const recipes = await Recipe.find()
+      .sort({ createdAt: -1 }) // Newest first
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({
+      recipes,
+      totalPages: Math.ceil(totalRecipes / limit),
+      currentPage: page,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Failed to fetch recipes." });
   }
 };
 
